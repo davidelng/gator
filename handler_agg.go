@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/davidelng/gator/internal/database"
+	"github.com/google/uuid"
 )
 
 func handlerAgg(s *state, cmd command) error {
@@ -49,7 +51,37 @@ func scrapeFeeds(s *state) error {
 	}
 
 	for _, item := range fetched.Channel.Item {
-		fmt.Printf("* %s\n", item.Title)
+		desc := sql.NullString{}
+		if item.Description != "" {
+			desc.String = item.Description
+			desc.Valid = true
+		}
+		pubAt := sql.NullTime{}
+		if item.PubDate != "" {
+			pubDateParsed, err := time.Parse(time.RFC1123Z, item.PubDate)
+			if err != nil {
+				pubAt.Time = pubDateParsed
+				pubAt.Valid = true
+			}
+		}
+
+		_, err = s.db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now().UTC(),
+			UpdatedAt:   time.Now().UTC(),
+			Title:       item.Title,
+			Url:         item.Link,
+			Description: desc,
+			PublishedAt: pubAt,
+			FeedID:      nextFeed.ID,
+		})
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+				continue
+			}
+			log.Printf("error writing post on db: %w", err)
+			continue
+		}
 	}
 
 	log.Printf("Feed %s collected, %v posts found", fetched.Channel.Title, len(fetched.Channel.Item))
