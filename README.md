@@ -19,11 +19,11 @@ Lastly, I love building CLI tools, and I love using Go for that.
 
 Install the program with `go install github.com/davidelng/gator`
 
-You'll have to setup a `.gatorconfig.json` file (like .gatoconfig.json.example) in your home directory providing a connection string to a PostgreSQL database (remember to disable ssl if you're in localhost).
+You'll have to setup a `.gatorconfig.json` file (see `.gatorconfig.json.example`) in your home directory providing a connection string to a PostgreSQL database (remember to disable ssl if you're in localhost).
 
 Now you can use `gator <cmd> [args...]` to run the program.
 
-Ideally, you'll want an instance of the program running and fetching feeds, and another instance to interact with the results
+Ideally, you'll want an instance of the program running and fetching feeds, and another instance to interact with the results.
 
 ### Available commands
 
